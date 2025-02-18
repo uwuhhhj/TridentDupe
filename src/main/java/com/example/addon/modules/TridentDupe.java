@@ -59,8 +59,6 @@ public class TridentDupe extends Module {
         .build()
     );
 
-    private final Queue<Packet<?>> delayedPackets = new LinkedList<>();
-
     public TridentDupe() {
         super(com.example.addon.TridentDupe.CATEGORY, "trident-dupe", "Dupes tridents in first hotbar slot. / / Killet / / Laztec / / Ionar");
     }
@@ -81,7 +79,8 @@ public class TridentDupe extends Module {
         if (!cancel)
             return;
 
-        MutableText packetStr = Text.literal(event.packet.toString()).formatted(Formatting.WHITE);
+        // MutableText packetStr = Text.literal(event.packet.toString()).formatted(Formatting.WHITE);
+        // System.out.println(packetStr);
 
         event.cancel();
     }
@@ -92,25 +91,6 @@ public class TridentDupe extends Module {
         if (mc.player == null)
             return;
 
-        for (int i = 0; i < 9; i++)
-        {
-            if (mc.player.getInventory().getStack((i)).getItem() == Items.TRIDENT)
-            {
-                Integer currentHotbarDamage = mc.player.getInventory().getStack((i)).getDamage();
-
-            }
-        }
-
-        PlayerInteractItemC2SPacket pckt = new PlayerInteractItemC2SPacket(Hand.MAIN_HAND, 10, -57.0f, 66.29f);
-
-        Int2ObjectMap<ItemStack> modifiedStacks = new Int2ObjectOpenHashMap<>();
-
-        modifiedStacks.put(3,  mc.player.getInventory().getStack(mc.player.getInventory().selectedSlot));
-        modifiedStacks.put(36,  mc.player.getInventory().getStack(mc.player.getInventory().selectedSlot));
-
-        ClickSlotC2SPacket packet = new ClickSlotC2SPacket(0, 15, 0, 0, SlotActionType.SWAP,
-            new ItemStack(Items.AIR), modifiedStacks);
-
         scheduledTasks.clear();
         dupe();
 
@@ -120,16 +100,14 @@ public class TridentDupe extends Module {
     {
         int delayInt = (delay.get()).intValue()*100;
 
-        System.out.println(delayInt);
-
         int lowestHotbarSlot = 0;
         int lowestHotbarDamage = 1000;
         for (int i = 0; i < 9; i++)
         {
             if (mc.player.getInventory().getStack((i)).getItem() == Items.TRIDENT)
             {
-                Integer currentHotbarDamage = mc.player.getInventory().getStack((i)).getDamage();
-                if(lowestHotbarDamage > currentHotbarDamage) { lowestHotbarSlot = i; lowestHotbarDamage = currentHotbarDamage;}
+                int currentHotbarDamage = mc.player.getInventory().getStack((i)).getDamage();
+                if (lowestHotbarDamage > currentHotbarDamage) { lowestHotbarSlot = i; lowestHotbarDamage = currentHotbarDamage;}
 
             }
         }
