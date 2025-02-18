@@ -1,5 +1,14 @@
+-Patched on latest version of paper as of 2/16
+
+Video Tutorial:
+https://youtu.be/TMZ3Xf49ifg?si=pqkr40mced1ky3GA
+
+
+
 # TridentDupe
 Minecraft Duplication Glitch working for 1.13+ to dupe tridents.
+
+The module is for 1.21.4 Meteor. You NEED meteor to run this.
 
 
 
