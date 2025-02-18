@@ -5,9 +5,6 @@
 
 package com.example.addon.modules;
 
-import meteordevelopment.meteorclient.systems.modules.Module;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import meteordevelopment.meteorclient.events.game.GameLeftEvent;
 import meteordevelopment.meteorclient.events.game.OpenScreenEvent;
 import meteordevelopment.meteorclient.events.packets.PacketEvent;
@@ -16,13 +13,11 @@ import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.DoubleSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
-import meteordevelopment.meteorclient.utils.player.ChatUtils;
+import meteordevelopment.meteorclient.systems.modules.Module;
 import meteordevelopment.orbit.EventHandler;
 import meteordevelopment.orbit.EventPriority;
 import net.minecraft.client.gui.screen.DisconnectedScreen;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.MutableText;
@@ -33,7 +28,9 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class TridentDupe extends Module {
     // Coded by Killet Laztec & Ionar :3
@@ -79,8 +76,8 @@ public class TridentDupe extends Module {
         if (!cancel)
             return;
 
-        // MutableText packetStr = Text.literal(event.packet.toString()).formatted(Formatting.WHITE);
-        // System.out.println(packetStr);
+//        MutableText packetStr = Text.literal(event.packet.toString()).formatted(Formatting.WHITE);
+//        System.out.println(packetStr);
 
         event.cancel();
     }
@@ -98,8 +95,6 @@ public class TridentDupe extends Module {
 
     private void dupe()
     {
-        int delayInt = (delay.get()).intValue()*100;
-
         int lowestHotbarSlot = 0;
         int lowestHotbarDamage = 1000;
         for (int i = 0; i < 9; i++)
@@ -135,22 +130,25 @@ public class TridentDupe extends Module {
             if(dropTridents.get()) mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 44, 0, SlotActionType.THROW, mc.player);
 
             cancel = true;
-            scheduleTask2(this::dupe, delayInt);
-        }, delayInt);
+            scheduleTask2(this::dupe, delay.get() * 100);
+        });
     }
 
 
     private boolean cancel = true;
 
     private final List<Pair<Long, Runnable>> scheduledTasks = new ArrayList<>();
-    private final List<Pair<Long, Runnable>> scheduledTasks2 = new ArrayList<>();
+    private final List<Pair<Double, Runnable>> scheduledTasks2 = new ArrayList<>();
 
-    public void scheduleTask(Runnable task, long delayMillis) {
-        long executeTime = System.currentTimeMillis() + delayMillis;
+    public void scheduleTask(Runnable task) {
+        // throw trident
+        long executeTime = System.currentTimeMillis() + 500;
         scheduledTasks.add(new Pair<>(executeTime, task));
     }
-    public void scheduleTask2(Runnable task, long delayMillis) {
-        long executeTime = System.currentTimeMillis() + delayMillis;
+
+    public void scheduleTask2(Runnable task, double delayMillis) {
+        // dupe loop
+        double executeTime = System.currentTimeMillis() + delayMillis;
         scheduledTasks2.add(new Pair<>(executeTime, task));
     }
 
@@ -168,11 +166,12 @@ public class TridentDupe extends Module {
                 }
             }
         }
+
         {
-            Iterator<Pair<Long, Runnable>> iterator = scheduledTasks2.iterator();
+            Iterator<Pair<Double, Runnable>> iterator = scheduledTasks2.iterator();
 
             while (iterator.hasNext()) {
-                Pair<Long, Runnable> entry = iterator.next();
+                Pair<Double, Runnable> entry = iterator.next();
                 if (entry.getLeft() <= currentTime) {
                     entry.getRight().run();
                     iterator.remove(); // Remove executed task from the list
@@ -192,5 +191,4 @@ public class TridentDupe extends Module {
             toggle();
         }
     }
-
 }
