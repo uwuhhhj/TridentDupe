@@ -1,4 +1,10 @@
 -Patched on latest version of paper as of Feb 16, 2025
+-Patched on 2b2t Feb 18, 2025
+
+"Autism inc" originally found this dupe. here's their discord: https://discord.gg/bukkit
+
+They gave the dupe to one of their members, who was showing it off to people. We reverse engineered this dupe from him showing it off, and made it fully automatic and afkable. The code is 100% ours, but the concept and dupe itself is heavily inspired by that group's work. please check them out :]
+
 
 Video Tutorial:
 https://youtu.be/TMZ3Xf49ifg?si=pqkr40mced1ky3GA
