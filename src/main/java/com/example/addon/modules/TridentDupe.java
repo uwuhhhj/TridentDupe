@@ -37,15 +37,15 @@ public class TridentDupe extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
     private final Setting<Double> delay = sgGeneral.add(new DoubleSetting.Builder()
         .name("dupe-delay")
-        .description("Raise this if it isn't working. This is how fast you'll dupe. 5 is good for most.")
-        .defaultValue(5)
+        .description("Delay between each dupe cycle. Unlikely to need increasing.")
+        .defaultValue(0)
         .build()
     );
 
     private final Setting<Double> chargeDelay = sgGeneral.add(new DoubleSetting.Builder()
         .name("charge-delay")
-        .description("Trident Charge Delay. If the server is lagging, you'll need to up this.")
-        .defaultValue(0)
+        .description("Delay between trident charge and throw. Increase if experiencing issues/lag.")
+        .defaultValue(5)
         .build()
     );
 
