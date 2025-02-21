@@ -42,6 +42,13 @@ public class TridentDupe extends Module {
         .build()
     );
 
+    private final Setting<Double> chargeDelay = sgGeneral.add(new DoubleSetting.Builder()
+        .name("charge-delay")
+        .description("Trident Charge Delay. If the server is lagging, you'll need to up this.")
+        .defaultValue(0)
+        .build()
+    );
+
     private final Setting<Boolean> dropTridents = sgGeneral.add(new BoolSetting.Builder()
         .name("dropTridents")
         .description("Drops tridents in your last hotbar slot.")
@@ -99,7 +106,7 @@ public class TridentDupe extends Module {
         int lowestHotbarDamage = 1000;
         for (int i = 0; i < 9; i++)
         {
-            if (mc.player.getInventory().getStack((i)).getItem() == Items.TRIDENT)
+            if (mc.player.getInventory().getStack((i)).getItem() == Items.TRIDENT || mc.player.getInventory().getStack((i)).getItem() == Items.BOW)
             {
                 int currentHotbarDamage = mc.player.getInventory().getStack((i)).getDamage();
                 if (lowestHotbarDamage > currentHotbarDamage) { lowestHotbarSlot = i; lowestHotbarDamage = currentHotbarDamage;}
@@ -131,7 +138,7 @@ public class TridentDupe extends Module {
 
             cancel = true;
             scheduleTask2(this::dupe, delay.get() * 100);
-        });
+        }, chargeDelay.get() * 100);
     }
 
 
@@ -140,9 +147,9 @@ public class TridentDupe extends Module {
     private final List<Pair<Long, Runnable>> scheduledTasks = new ArrayList<>();
     private final List<Pair<Double, Runnable>> scheduledTasks2 = new ArrayList<>();
 
-    public void scheduleTask(Runnable task) {
+    public void scheduleTask(Runnable task, double tridentThrowTime) {
         // throw trident
-        long executeTime = System.currentTimeMillis() + 500;
+        long executeTime = System.currentTimeMillis() + (int) tridentThrowTime;
         scheduledTasks.add(new Pair<>(executeTime, task));
     }
 
