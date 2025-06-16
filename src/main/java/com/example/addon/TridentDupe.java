@@ -15,6 +15,7 @@ public class TridentDupe extends MeteorAddon {
     public void onInitialize() {
         LOG.info("Initializing Meteor Addon Template");
         Modules.get().add(new com.example.addon.modules.TridentDupe());
+        Modules.get().add(new com.example.addon.modules.ExampleModule());
     }
 
     @Override

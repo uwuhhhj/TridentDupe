@@ -33,60 +33,61 @@ import java.util.Iterator;
 import java.util.List;
 
 public class TridentDupe extends Module {
-    // Coded by Killet Laztec & Ionar :3
-    private final SettingGroup sgGeneral = settings.getDefaultGroup();
+    // 作者 Killet Laztec & Ionar :3
+    private final SettingGroup sgGeneral = settings.getDefaultGroup(); // 设置分组，所有设置都归在默认分组下
     private final Setting<Double> delay = sgGeneral.add(new DoubleSetting.Builder()
-        .name("dupe-delay")
-        .description("Delay between each dupe cycle. Unlikely to need increasing.")
-        .defaultValue(0)
+        .name("dupe-delay") // 设置名称：复制循环的延迟
+        .description("Delay between each dupe cycle. Unlikely to need increasing.") // 设置描述：每次复制循环之间的延迟，通常无需增加
+        .defaultValue(0) // 默认值为0毫秒
         .build()
     );
 
     private final Setting<Double> chargeDelay = sgGeneral.add(new DoubleSetting.Builder()
-        .name("charge-delay")
-        .description("Delay between trident charge and throw. Increase if experiencing issues/lag.")
-        .defaultValue(5)
+        .name("charge-delay") // 设置名称：三叉戟蓄力与投掷之间的延迟
+        .description("Delay between trident charge and throw. Increase if experiencing issues/lag.") // 设置描述：三叉戟蓄力和投掷之间的延迟，遇到卡顿可适当增加
+        .defaultValue(5) // 默认值为5毫秒
         .build()
     );
 
     private final Setting<Boolean> dropTridents = sgGeneral.add(new BoolSetting.Builder()
-        .name("dropTridents")
-        .description("Drops tridents in your last hotbar slot.")
-        .defaultValue(true)
+        .name("dropTridents") // 设置名称：是否丢弃三叉戟
+        .description("Drops tridents in your last hotbar slot.") // 设置描述：是否丢弃你快捷栏最后一格的三叉戟
+        .defaultValue(true) // 默认开启
         .build()
     );
 
     private final Setting<Boolean> durabilityManagement = sgGeneral.add(new BoolSetting.Builder()
-        .name("durabilityManagement")
-        .description("(More AFKable) Attempts to dupe the highest durability trident in your hotbar.")
-        .defaultValue(true)
+        .name("durabilityManagement") // 设置名称：耐久管理
+        .description("(More AFKable) Attempts to dupe the highest durability trident in your hotbar.") // 设置描述：更适合挂机，优先复制耐久最高的三叉戟
+        .defaultValue(true) // 默认开启
         .build()
     );
 
     public TridentDupe() {
+        // 调用父类构造方法，指定模块分类、名称和描述
         super(com.example.addon.TridentDupe.CATEGORY, "trident-dupe", "Dupes tridents in first hotbar slot. / / Killet / / Laztec / / Ionar");
     }
 
     @EventHandler(priority = EventPriority.HIGHEST + 1)
     private void onSendPacket(PacketEvent.Send event) {
-
+        // 拦截部分数据包，防止服务器检测到异常操作
         if (event.packet instanceof ClientTickEndC2SPacket
             || event.packet instanceof PlayerMoveC2SPacket
             || event.packet instanceof CloseHandledScreenC2SPacket)
-            return;
+            return; // 如果是这三种数据包，直接放行
 
         if (!(event.packet instanceof ClickSlotC2SPacket)
             && !(event.packet instanceof PlayerActionC2SPacket))
         {
-            return;
+            return; // 如果不是物品栏点击或玩家动作数据包，也直接放行
         }
         if (!cancel)
-            return;
+            return; // 如果cancel为false，不拦截
 
 //        MutableText packetStr = Text.literal(event.packet.toString()).formatted(Formatting.WHITE);
 //        System.out.println(packetStr);
 
-        event.cancel();
+        event.cancel(); // 拦截并取消该数据包的发送
     }
 
     @Override
@@ -118,27 +119,39 @@ public class TridentDupe extends Module {
         cancel = true;
 
         int finalLowestHotbarSlot = lowestHotbarSlot;
-        scheduleTask(() -> {
-            cancel = false;
+        scheduleTask(() -> { // 安排一个延迟任务（chargeDelay毫秒后执行），用于处理三叉戟复制的后续操作
+            cancel = false; // 允许数据包正常发送（解除拦截），为后续操作做准备
 
+            // 如果启用了耐久管理功能
             if(durabilityManagement.get()) {
+                // 如果选中的三叉戟不在第一个快捷栏（0号位）
                 if(finalLowestHotbarSlot != 0) {
+                    // 将副手（44号槽）与选中的三叉戟槽交换
                     mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, (44), 0, SlotActionType.SWAP, mc.player);
-                    if(dropTridents.get())mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 44, 0, SlotActionType.THROW, mc.player);
+                    // 如果启用了自动丢弃三叉戟，丢弃副手（44号槽）中的三叉戟
+                    if(dropTridents.get())
+                        mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 44, 0, SlotActionType.THROW, mc.player);
+                    // 再把原本选中的三叉戟槽和副手（44号槽）交换回来
                     mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, (36 + finalLowestHotbarSlot), 0, SlotActionType.SWAP, mc.player);
                 }
             }
 
+            // 将第4号槽（通常是背包的某个槽位）与当前主手物品交换
             mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 3, 0, SlotActionType.SWAP, mc.player);
 
+            // 发送"释放使用物品"数据包，模拟玩家松开右键（即投掷三叉戟）
             PlayerActionC2SPacket packet2 = new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN, 0);
             mc.getNetworkHandler().sendPacket(packet2);
 
-            if(dropTridents.get()) mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 44, 0, SlotActionType.THROW, mc.player);
+            // 如果启用了自动丢弃三叉戟，再次丢弃副手（44号槽）中的三叉戟
+            if(dropTridents.get())
+                mc.interactionManager.clickSlot(mc.player.currentScreenHandler.syncId, 44, 0, SlotActionType.THROW, mc.player);
 
-            cancel = true;
+            cancel = true; // 再次开启数据包拦截，防止后续操作被服务器检测
+
+            // 安排下一个复制循环（delay毫秒后再次执行dupe方法，实现自动挂机）
             scheduleTask2(this::dupe, delay.get() * 100);
-        }, chargeDelay.get() * 100);
+        }, chargeDelay.get() * 100); // 本次任务将在chargeDelay毫秒后执行
     }
 
 
